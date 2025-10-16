@@ -507,11 +507,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
 
 ## 🙏 Acknowledgments
 
@@ -544,4 +539,5 @@ If this project helped you, please give it a ⭐ on GitHub!
 [Report Bug](https://github.com/Shubham00-3/tailor-resume/issues) · [Request Feature](https://github.com/Shubham00-3/tailor-resume/issues)
 
 </div>
+
 
