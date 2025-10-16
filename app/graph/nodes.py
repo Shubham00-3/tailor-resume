@@ -116,7 +116,16 @@ Return ONLY the JSON object, no additional text.
             response = response[:-3]
         response = response.strip()
         
-        extracted_data = json.loads(response)
+        # Try to parse JSON - use strict=False to be more lenient
+        try:
+            extracted_data = json.loads(response)
+        except json.JSONDecodeError:
+            # If normal parsing fails, try with a more permissive approach
+            # Remove problematic whitespace/control chars but preserve structure
+            import re
+            # Try to clean up the response while preserving JSON structure
+            response = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response)  # Remove control characters
+            extracted_data = json.loads(response)
         
         state["jd_keywords"] = extracted_data
         state["all_required_skills"] = (
@@ -195,7 +204,14 @@ Return ONLY the JSON object, no additional text.
             response = response[:-3]
         response = response.strip()
         
-        skill_analysis = json.loads(response)
+        # Try to parse JSON
+        try:
+            skill_analysis = json.loads(response)
+        except json.JSONDecodeError:
+            # If normal parsing fails, remove control characters
+            import re
+            response = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response)
+            skill_analysis = json.loads(response)
         
         state["matched_skills"] = skill_analysis.get("matched_skills", [])
         state["missing_skills"] = skill_analysis.get("missing_skills", [])
@@ -264,7 +280,7 @@ Return ONLY the JSON object, no additional text.
     try:
         response = call_groq_api(prompt, temperature=0.4, max_tokens=3000)
         
-        # Parse JSON response
+        # Clean and parse JSON response
         response = response.strip()
         if response.startswith("```json"):
             response = response[7:]
@@ -274,7 +290,40 @@ Return ONLY the JSON object, no additional text.
             response = response[:-3]
         response = response.strip()
         
-        result = json.loads(response)
+        # Try to parse JSON
+        try:
+            result = json.loads(response)
+        except json.JSONDecodeError:
+            # If normal parsing fails, we need to fix string values with unescaped newlines
+            import re
+            
+            # Strategy: Find string values in JSON and escape special characters within them
+            # This regex finds content between quotes that are property values
+            def escape_json_string(match):
+                content = match.group(1)
+                # Escape special characters
+                content = content.replace('\\', '\\\\')  # Escape backslashes first
+                content = content.replace('\n', '\\n')   # Escape newlines
+                content = content.replace('\r', '\\r')   # Escape carriage returns
+                content = content.replace('\t', '\\t')   # Escape tabs
+                content = content.replace('"', '\\"')    # Escape quotes
+                return f'"{content}"'
+            
+            # Find and fix string values (content between ": " and next " or ,/})
+            # This is a simplified approach - match content after colon
+            try:
+                # Split by quote, process odd indices (string contents)
+                parts = response.split('"')
+                for i in range(1, len(parts), 2):
+                    if i < len(parts):
+                        # This is string content - escape newlines
+                        parts[i] = parts[i].replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
+                response = '"'.join(parts)
+                result = json.loads(response)
+            except:
+                # If that fails too, just remove control characters
+                response = re.sub(r'[\x00-\x1f\x7f-\x9f]', ' ', response)
+                result = json.loads(response)
         
         state["tailored_resume"] = result.get("tailored_resume", resume_text)
         state["summary"] = result.get("professional_summary", "")
@@ -283,6 +332,8 @@ Return ONLY the JSON object, no additional text.
         
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse JSON response: {e}")
+        logger.error(f"Response preview: {response[:200] if len(response) > 200 else response}")
+        # Fallback - try to extract content without JSON parsing
         state["tailored_resume"] = resume_text
         state["summary"] = "Unable to generate summary. Please try again."
     except Exception as e:
