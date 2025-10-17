@@ -1,0 +1,104 @@
+# ========================================
+# DOCKER COMMANDS - Quick Reference
+# ========================================
+
+# ===== BUILD =====
+
+# Build the image
+docker build -t resume-tailor-ai .
+
+# Build with specific version
+docker build -t resume-tailor-ai:v1.0.0 .
+
+
+# ===== RUN LOCALLY =====
+
+# Run with Docker Compose (RECOMMENDED)
+docker-compose up -d --build
+
+# OR Run with Docker CLI
+docker run -d --name resume-tailor -p 8000:8000 -e GROQ_API_KEY=your_key_here resume-tailor-ai
+
+# Check if it's running
+docker ps
+
+# View logs
+docker logs -f resume-tailor
+
+# Test the API
+curl http://localhost:8000/health
+
+
+# ===== STOP & REMOVE =====
+
+# Using Docker Compose
+docker-compose down
+
+# Using Docker CLI
+docker stop resume-tailor
+docker rm resume-tailor
+
+
+# ===== PUSH TO DOCKER HUB =====
+
+# 1. Login
+docker login
+
+# 2. Tag (replace YOUR_USERNAME)
+docker tag resume-tailor-ai YOUR_USERNAME/resume-tailor-ai:latest
+docker tag resume-tailor-ai YOUR_USERNAME/resume-tailor-ai:v1.0.0
+
+# 3. Push
+docker push YOUR_USERNAME/resume-tailor-ai:latest
+docker push YOUR_USERNAME/resume-tailor-ai:v1.0.0
+
+
+# ===== PUSH TO GITHUB CONTAINER REGISTRY =====
+
+# 1. Login (replace YOUR_TOKEN and YOUR_USERNAME)
+echo YOUR_TOKEN | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+
+# 2. Tag
+docker tag resume-tailor-ai ghcr.io/YOUR_USERNAME/resume-tailor-ai:latest
+docker tag resume-tailor-ai ghcr.io/YOUR_USERNAME/resume-tailor-ai:v1.0.0
+
+# 3. Push
+docker push ghcr.io/YOUR_USERNAME/resume-tailor-ai:latest
+docker push ghcr.io/YOUR_USERNAME/resume-tailor-ai:v1.0.0
+
+
+# ===== PULL & RUN FROM REGISTRY =====
+
+# From Docker Hub
+docker pull YOUR_USERNAME/resume-tailor-ai:latest
+docker run -d -p 8000:8000 -e GROQ_API_KEY=key YOUR_USERNAME/resume-tailor-ai:latest
+
+# From GitHub Container Registry
+docker pull ghcr.io/YOUR_USERNAME/resume-tailor-ai:latest
+docker run -d -p 8000:8000 -e GROQ_API_KEY=key ghcr.io/YOUR_USERNAME/resume-tailor-ai:latest
+
+
+# ===== DEBUGGING =====
+
+# Enter container shell
+docker exec -it resume-tailor bash
+
+# Check health
+docker inspect --format='{{.State.Health.Status}}' resume-tailor
+
+# View resource usage
+docker stats resume-tailor
+
+
+# ===== CLEANUP =====
+
+# Remove container
+docker stop resume-tailor && docker rm resume-tailor
+
+# Remove image
+docker rmi resume-tailor-ai
+
+# Clean up all unused Docker data
+docker system prune -a
+
+

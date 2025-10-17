@@ -9,19 +9,23 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 # Prevents Python from buffering stdout and stderr
 ENV PYTHONUNBUFFERED=1
+# Pip configuration for better Docker builds
+ENV PIP_NO_CLEAN_AFTER_INSTALL=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # STEP 4: Install system dependencies (if needed)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # STEP 5: Copy requirements file
 COPY requirements.txt .
 
-# STEP 6: Install Python dependencies
+# STEP 6: Install Python dependencies with retry and optimizations
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --timeout=1000 --retries=5 -r requirements.txt
 
 # STEP 7: Copy application code
 COPY . .
@@ -36,7 +40,7 @@ EXPOSE 8000
 
 # STEP 10: Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # STEP 11: Run the application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
