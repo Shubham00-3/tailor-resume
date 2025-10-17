@@ -26,10 +26,12 @@
 - **Professional Summaries** - Generates compelling 3-4 sentence professional summaries
 
 ### 🎨 **Modern Frontend**
+- **Drag & Drop Upload** - Upload resume files (PDF, DOCX, TXT) with drag-and-drop
 - **Clean UI/UX** - Beautiful, intuitive interface built with React and Tailwind CSS
 - **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
 - **Real-time Feedback** - Character counts, validation, and status indicators
 - **Copy to Clipboard** - One-click copy for tailored resumes
+- **File Format Support** - Automatic text extraction from PDF and DOCX files
 
 ### 🔧 **Production Ready**
 - **RESTful API** - Well-documented FastAPI backend

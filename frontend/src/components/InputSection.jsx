@@ -1,4 +1,5 @@
 import React from 'react';
+import FileUpload from './FileUpload';
 
 const InputSection = ({
   resumeText,
@@ -9,6 +10,14 @@ const InputSection = ({
   onClear,
   loading,
 }) => {
+  const handleResumeFileRead = (text) => {
+    setResumeText(text);
+  };
+
+  const handleJobDescriptionFileRead = (text) => {
+    setJobDescription(text);
+  };
+
   return (
     <div className="grid md:grid-cols-2 gap-6 mb-8">
       {/* Resume Input */}
@@ -16,6 +25,9 @@ const InputSection = ({
         <label htmlFor="resume" className="block text-lg font-semibold text-gray-900 mb-3">
           Your Resume
         </label>
+        
+        {/* File Upload */}
+        <FileUpload onFileRead={handleResumeFileRead} disabled={loading} />
         <textarea
           id="resume"
           className="textarea-field"
@@ -49,6 +61,9 @@ Experience:
         <label htmlFor="jobDescription" className="block text-lg font-semibold text-gray-900 mb-3">
           Job Description
         </label>
+        
+        {/* File Upload */}
+        <FileUpload onFileRead={handleJobDescriptionFileRead} disabled={loading} />
         <textarea
           id="jobDescription"
           className="textarea-field"
